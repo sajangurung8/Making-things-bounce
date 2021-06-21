@@ -1,0 +1,364 @@
+<!--Name: Sajan Gurung-->
+<!--This html page uses WebGL to animate objects in browser-->
+
+<html>
+    <head>
+        <title>Making things bounce</title>
+        <meta charset="UTF-8">
+        <style>
+            input {
+                margin-left: 20px;
+            }
+        </style>
+
+<script src = "three.js"></script>
+<script src="OrbitControls.js"></script>
+
+<script>
+"use strict";
+
+// global variables
+let canvas, renderer, scene, camera, controls, cube, sphere, cylinder, plane, cone, ring,sun1, sun2
+let scOn = true, animationOn = true, choice = true, z=0, y=-2, a=1, b=1;
+
+
+// rendering function
+function render(){
+    renderer.render(scene, camera);
+}
+
+// function to reset the scene
+function reset(){
+    camera.position.set(0,0,10);    // resets camera position
+    renderer.setClearColor( "black" )   // resets the BG color
+
+}
+
+// function to control the animation(on or off)
+function animationSwitch(choice){
+    if(choice == false){
+        animationOn = false;
+    } else{
+        animationOn = true;
+    }
+
+}
+
+function zoom(){
+    //zooming in and out depending on slider
+    var slider = document.getElementById("myRange")
+    camera.position.z = slider.value
+}
+
+// function to animate the scene
+function animate(){
+    requestAnimationFrame(animate);
+    if(animationOn== true){
+        // rotating diffrent components
+        cube.rotation.x +=0.01;
+        cube.rotation.y +=0.01;
+        plane.rotation.z += 0.01;
+        cylinder.rotation.x += 0.01;
+        cone.rotation.x += 0.01;
+        cone.rotation.y += 0.01;
+        cone.rotation.z += 0.01;
+        ring.rotation.x += 0.01;
+        ring.rotation.y += 0.01;
+        ring.rotation.z += 0.01;
+        cylinder.position.set (0,0,-1 );
+        plane.position.set(0,0,-2.5);
+
+        // moving components in z plane
+        if (scOn == true){
+            cube.position.set (2,0, z+=.04 );
+            sphere.position.set (0,y+=0.04, z+=.01 );
+            ring.position.set(0, 3, z+=.01);
+            plane.scale.x-=.01
+            plane.scale.y-=.01
+            if(z>=3) scOn = false;
+        } else{
+            cube.position.set (2,0, z-=.04 );
+            sphere.position.set (0,y-=0.04, z-=.01 );
+            ring.position.set(0, 3, z-=.01);
+            plane.scale.x+=.01;
+            plane.scale.y+=.01;
+            if(z<=-2) scOn = true;
+        }
+    }
+    render();
+
+}
+
+// function used from reflection.html provided by the instructor to make the scene movable with mouse
+function installOrbitControls(camera, canvas, callback) {
+    controls = new THREE.OrbitControls(camera,canvas);
+    controls.noPan = true;
+    controls.noZoom = true;
+    controls.staticMoving = true;
+    function move() {
+        controls.update();
+        callback();
+    }
+    function down() {
+        document.addEventListener("mousemove", move, false);
+    }
+    function up() {
+        document.removeEventListener("mousemove", move, false);
+    }
+    function touch(event) {
+        if (event.touches.length == 1) {
+            move();
+        }
+    }
+    canvas.addEventListener("mousedown", down, false);
+    canvas.addEventListener("touchmove", touch, false);
+}
+
+let color, obj;
+
+// function to change background color depending on user selection
+function changeBackground( color){
+    if(color==1)
+            renderer.setClearColor( "brown" )
+    if(color==2)
+            renderer.setClearColor( "blue" )
+    if(color==3)
+            renderer.setClearColor( "purple" )
+
+}
+
+// variables for switching components on and off
+let cubeOn= true, cylinderOn = true, sphereOn = true, coneOn = true, planeOn =true, ringOn=true, sun1On =true, sun2On = true;
+
+// function to add or remove components
+function addRemoveObj(obj){
+    switch(obj){
+        case 1:     // for cube
+        if(cubeOn==true){
+            scene.remove(cube);
+            cubeOn=false
+            }
+            else{
+            scene.add(cube)
+            cubeOn = true
+            }
+            break;
+        case 2:       // for cylinder
+        if(cylinderOn==true){
+            scene.remove(cylinder);
+            cylinderOn=false
+            }
+            else{
+            scene.add(cylinder)
+            cylinderOn = true
+            }
+            break;
+        case 3:         // for sphere
+        if(sphereOn==true){
+            scene.remove(sphere);
+            sphereOn=false
+            }
+            else{
+            scene.add(sphere)
+            sphereOn = true
+            }
+            break;
+        case 4:         // for cone
+        if(coneOn==true){
+            scene.remove(cone);
+            coneOn=false
+            }
+            else{
+            scene.add(cone)
+            coneOn = true
+            }
+            break;
+        case 5:         // for ring
+        if(ringOn==true){
+            scene.remove(ring);
+            ringOn=false
+            }
+            else{
+            scene.add(ring)
+            ringOn = true
+            }
+            break;
+        case 6:         // for plane
+        if(planeOn==true){
+            scene.remove(plane);
+            planeOn=false
+            }
+            else{
+            scene.add(plane)
+            planeOn = true
+            }
+            break;
+        case 7:         // for white light source
+        if(sun1On==true){
+            scene.remove(sun1);
+            sun1On=false
+            }
+            else{
+            scene.add(sun1)
+            sun1On = true
+            }
+            break;
+        case 8:         // for blue light source
+        if(sun2On==true){
+            scene.remove(sun2);
+            sun2On=false
+            }
+            else{
+            scene.add(sun2)
+            sun2On = true
+            }
+            break;
+        default:
+    }
+}
+
+
+function init(){
+    canvas = document.getElementById("glcanvas");    // getting canvas from the html code
+    renderer = new THREE.WebGLRenderer( {
+            canvas: canvas,
+            antialias: true
+    } );
+    renderer.shadowMapEnabled = true; // enable shadow on the renderer
+    document.body.appendChild(renderer.domElement);  // continously animating graphics
+    sun1 = new THREE.DirectionalLight();      // white light source
+    sun1.castShadow = true;
+    sun1.position.set(-8, 8, 4);
+    sun2 = new THREE.DirectionalLight(0x0088aa);    // blue light source
+    sun2.castShadow = true;
+    sun2.position.set(8, -8, 4);
+    scene = new THREE.Scene();   // creating scene
+    // creating camera object
+    camera = new THREE.PerspectiveCamera(50, canvas.width/canvas.height, 0.1, 100);
+    camera.position.z = 10;
+    // adding components to the scene
+    scene.add(camera);
+    scene.add(sun1);
+    scene.add(sun2);
+    scene.add( new THREE.AmbientLight(0x111111) ); // creating ambient light for the scene
+
+    // geometries defined for the components
+    var g1 = new THREE.BoxGeometry(.5,.5,.5);
+     var g2 = new THREE.SphereGeometry( .5, 32, 16 )
+     var g3 = new THREE.CylinderGeometry(.5, 1, 2, 32)
+     var g4 = new THREE.PlaneGeometry(8,8)
+     var g5 = new THREE.CylinderGeometry(.5, 0, 2, 32)
+     var g6 = new THREE.TorusGeometry(.7, .2, 32, 100)
+
+    // materials defined for the components
+     var mat4 = new THREE.MeshPhongMaterial( {
+      color: 0xff000,
+          ambient: 0xbbbb00,   // reflectivity for ambient light
+          emissive: 0,         // emission color; this is the default (black)
+          specular: 0x070707,  // reflectivity for specular light
+          shininess: 50        // controls size of specular highlights
+       });
+     var mat3 = new THREE.MeshPhongMaterial( {
+      color: 0xffffff,
+          ambient: 0xbbbb00,   // reflectivity for ambient light
+          emissive: 0,         // emission color; this is the default (black)
+          specular: 0x070707,  // reflectivity for specular light
+          shininess: 50        // controls size of specular highlights
+       });
+     var mat2 = new THREE.MeshPhongMaterial( {
+      color: 0x0088aa,
+      // color: 0xbbbb00,     // reflectivity for diffuse light
+          ambient: 0xbbbb00,   // reflectivity for ambient light
+          emissive: 0,         // emission color; this is the default (black)
+          specular: 0x070707,  // reflectivity for specular light
+          shininess: 50        // controls size of specular highlights
+       });
+    var mat1 = new THREE.MeshPhongMaterial( {
+      // color: 0x0088aa,
+       color: 0xbbbb00,     // reflectivity for diffuse light
+          ambient: 0xbbbb00,   // reflectivity for ambient light
+          emissive: 0,         // emission color; this is the default (black)
+          specular: 0x070707,  // reflectivity for specular light
+          shininess: 50        // controls size of specular highlights
+       });
+    // creating components
+    plane = new THREE.Mesh(g4, mat3)
+    cylinder = new THREE.Mesh(g3, mat3);
+    cube = new THREE.Mesh(g1, mat1);
+    sphere = new THREE.Mesh(g2, mat2);
+    cone = new THREE.Mesh(g5, mat1);
+    ring = new THREE.Mesh(g6, mat4)
+    // adding components to the scene and setting positions
+    scene.add(cylinder)
+    scene.add(sphere);
+    scene.add(cube);
+    scene.add(plane)
+    scene.add(cone)
+    cone.position.set(-2, 1,-1.4)
+    scene.add(ring)
+    ring.position.set(0, 3, -1);
+    plane.castShadow = true;
+    plane.recieveShadow = true;
+    cube.castShadow = true;
+    cylinder.castShadow = true;
+    installOrbitControls(camera, canvas, render);     // making scene responsive to mouse
+    // animates scene if animationOn is true otherwise shows 3d still scene
+    if(animationOn == true){
+        animate();
+    }else{
+        render();
+    }
+}
+
+init();
+
+
+</script>
+</head>
+<body onload="init()">
+<noscript>
+    <p style="color: #A00; font-weight: bold">Sorry, but this page requires JavaScript!</p>
+</noscript>
+    <div style="float:left">
+       <canvas width=650 height=600 id="glcanvas" ></canvas>
+    </div>
+    <div style="float:left; margin-left:0px">
+        <p style="margin-top:0px">
+        <fieldset id="group1"><legend>Animation Control</legend>
+            <div>
+            <input type="radio" value="value1" onclick ="animationSwitch(true)" name="group1" id="anOn" checked><label for="anOn">On</label>
+            <input type="radio" value="value2" onclick ="animationSwitch(false)" name="group1" id="anOff"><label for="anOff">Off </label>
+          </fieldset>
+        </p>
+    <div class="slidecontainer">
+        <label>Use sliderbar to Zoom in/out</label><br>
+          <input type="range" min="5" max="20" value="10" class="slider" id="myRange" onclick="zoom()">
+    </div>
+    <p style ="margin-top:0px">
+        <br><label>Component Switches</label><br><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(1)" checked><label for="cube">Cube</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(2)" checked><label for="cube">Cylinder</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(3)" checked><label for="cube">Sphere</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(4)" checked><label for="cube">Cone</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(5)" checked><label for="cube">Torus</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(6)" checked><label for="cube">Plane</label><br>
+    </p>
+    <p>
+        <br><label>Light Switches</label><br><br>
+         <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(7)" checked><label for="cube">Light One</label><br>
+            <input type="checkbox" value="value1" id="cube" onclick="addRemoveObj(8)" checked><label for="cube">Light two</label><br>
+    </p>
+    <p>
+        <br>
+        <label>Press button to change BG:</label><br><br>
+        <button id=bttn onclick="changeBackground(1)" >Brown</button>
+        <button id=bttn onclick="changeBackground(2)" >Blue</button>
+        <button id=bttn onclick="changeBackground(3)" >purple</button>
+    </p>
+    <p style="margin-top:0px">
+        <br><label>Press button to Reset Scene:</label><br>
+        <button id=bttn onclick="reset()" >Reset</button>
+    </p>
+    </div>
+</body>
+</html>
